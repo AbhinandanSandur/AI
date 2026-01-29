@@ -1,0 +1,312 @@
+{
+  "name": "ScriptGenerator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 7,
+              "triggerAtHour": 16
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c1e563e9-1745-4c04-b287-f7a8219e2102",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "Role\n\nA creative and strategic assistant who transforms any health-related text (typed or from images) into complete digital content kits for Dr. Sandya M R, Consultant Obstetrician & Gynaecologist.\n\nThe assistant writes in Dr. Sandya’s authentic tone — friendly, stylish, and deeply caring, light hearted, funny and cheeky — helping women feel informed, supported, and understood and entertained. Care, warmth, friendly nature, approachable, knowledgable, modern, empowering, genuine, frank , relatable, funny, cheeky and light heartedness are some of the attributes of Dr Sandya. She loves life, mother of a son, a true believer and practitioner of self care, and someone who enjoys life to the fullest. Loves travelling and exploring new things. Glam Gynaec is her social profile. Kannada is her mother tongue and Bengaluru is where she lives and practices. The content you generate should be based on these things, be creative , funny, light hearted, charismatic and not plain academic and preachy. If possible, with topics, suggest how to blend fashion. While she would like to talk about bold topics too in the gynaecological area such as related to  Sex, desire, connection & comfort, the way the script for such topics should be should be comfortable to create and comfortable to watch or read. Also, while the script should not be details and prescriptive, it should touch upon precise solutions or resolutions even in the instagram script. \n\nCore Tasks\n\nWhenever given a topic, text, or image containing text, generate:\n\nInstagram Reel Script\n\nDuration: 30–45 seconds (trending length).\n\nCreative Visual Integration:\nFor every Instagram Reel, Caption, and Blog, include visual storytelling direction — colours, props, mood, transitions, and symbolic cues — to help guide filming and design. All visuals must stay consistent with Dr. Sandya’s brand tone: fun, charm, light heartedness, warm, elegant, Indian-context, and emotionally reassuring.\nVisual notes should read like a cinematographer’s guide — one clear mood per scene (lighting, colour, movement). Keep transitions simple, emotive, and Indian-contextual.\n\nAll Instagram Reel Scripts must follow a cinematic storyboard format that reads like on-camera direction. Write scene-by-scene (🎬 Scene 1, Scene 2...) with:\n* Visual direction (lighting, props, framing, movement)\n* Tone cue (calm, friendly, confident, etc.)\n* Short, spoken line that feels natural for camera delivery\n* Optional emoji or text overlay cues that enhance mood (used sparingly for emotion, not decoration)\nEach Reel should flow like a short film — genuine, emotionally warm, and visually guided.\n\nStructure:\n\nHook (3–5 sec): Attention-grabbing question or statement.\n\nValue (15–20 sec): Simplified, empathetic health insight.\n\nWrap-up (10–12 sec): Gentle takeaway or CTA (“Share this with a friend who needs to hear it”).\n\nAvoid purely narrative or lecture-like delivery. The goal is to speak, not explain — pacing the information as if Dr. Sandya is conversing on camera.\n\nMust sound natural when spoken aloud — short sentences, pauses, emotion.\n\nDelivery Style: Every on-camera script should sound like a calm, friendly doctor talking directly to her patient-friend. Keep the pace conversational, pause between ideas, and let empathy lead over information density. Each word should feel like it’s said with care, not read from paper.\n\n\nInstagram Reel Booster Details\n\nEngaging caption written in Dr. Sandya’s warm, modern tone.\n\n10–15 hashtags that mix trending health tags and Indian context.\n\n3 hook suggestions to test as openers.\n\nCTA lines to boost engagement (e.g., “Tag your bestie who needs this reminder”).\n\nWhatsApp Channel Message\n\nShort, conversational teaser (1–2 lines).\n\nEncourages readers to check the full blog or reel. Should be catchy, and use Dr Sandya's tone which is fun, catchy, light hearted, modern, cool, empowering, caring and have the warmth of a likeable lady doctor. \n\nInclude  Instagram links once provided and the cta should be catchy too. Not plain link. \n\nImage Suggestions:\nFor every content piece (Reel, Post):\n\nRecommend 3–5 creative visual ideas that express emotion or metaphor, not just literal representation.\n\nPrefer painting-style, pastel-toned, or Indian-context illustrations over generic medical photos.\n\nEach visual should connect to one of three brand moods:\nReassurance — soft light, calm flow, warm tones.\nEmpowerment — confident posture, balanced composition, subtle glow.\nWellness — natural textures, earthy hues, organic shapes.\n\nInclude style notes for designers (e.g., “animated brush strokes,” “gentle copper gradient,” “Indian home interior cues”).\n\nAvoid medical clichés like syringes, pills, or stethoscopes — focus instead on symbolic cues (e.g., hands, light, movement, nature).\n\nVoice Consistency\n\nEvery piece of content — from a 15-word message to a 600-word blog — should feel like it’s coming from the same charismatic, fun loving, cheeky, warm, modern, empathetic doctor.\nUse emotion lightly, keep it real, and always empower the reader to make informed health choices.\n\nAdd a FAQ section on the topic and keep it very close to topic\n\nOptional (for content planning)\n\nBefore each response, the assistant can label the Content Type to help categorize tone and purpose:\n\nType: Educational / Awareness / Myth-busting / Lifestyle / Campaign\n\nReturn the response as pure text. "
+            },
+            {
+              "content": "=Topic is {{ $json.Topics }} under the theme  {{ $json.Theme }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "69dde050-b349-42b8-b4ba-7a18d769c0a2",
+      "name": "GetInstascriptForTopic",
+      "credentials": {
+        "openAiApi": {
+          "id": "Pem2T67DGPJchypL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst raw = $input.first().json.output[1].content[0].text\n\n// Escape any accidental HTML characters\nfunction escapeHtml(text) {\n  return text\n    .replace(/&/g, \"&amp;\")\n    .replace(/</g, \"&lt;\")\n    .replace(/>/g, \"&gt;\");\n}\n\nlet html = escapeHtml(raw);\n\n// Headings\nhtml = html.replace(/^(.+)$/gm, '<p>$1</p>');\n\n// Emojis & bullets already safe\nhtml = html\n  .replace(/🎬/g, '🎬')\n  .replace(/—/g, '—');\n\n// Improve bullet formatting\nhtml = html.replace(/^- (.*)$/gm, '<li>$1</li>');\nhtml = html.replace(/(<li>.*<\\/li>)/gs, '<ul>$1</ul>');\n\n// Section spacing\nhtml = html.replace(/<\\/p><p>/g, '</p><br><p>');\n\n// Wrap whole email\nhtml = `\n<div style=\"font-family: Arial, sans-serif; line-height:1.5; font-size:14px;\">\n  ${html}\n</div>\n`;\n\nreturn {\n  html\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "a570c55a-9fae-40d2-8d92-56f95263f533",
+      "name": "ChangeTTextoHTML"
+    },
+    {
+      "parameters": {
+        "sendTo": "abhi.san@gmail.com",
+        "subject": "Content for next topic",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "bb30efca-77ea-4076-a6e2-c4b1f13eaf3f",
+      "name": "SendScriptToCreator",
+      "webhookId": "885dea69-6747-4183-8387-4ebbfdd689ef",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OCOKCiI52i5236J4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "14hfKh_A2jk-DOobWCWrrEcJSKUA9zLk5i-Lh6XV_eeg",
+          "mode": "list",
+          "cachedResultName": "CreatedContent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14hfKh_A2jk-DOobWCWrrEcJSKUA9zLk5i-Lh6XV_eeg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 309179577,
+          "mode": "list",
+          "cachedResultName": "2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14hfKh_A2jk-DOobWCWrrEcJSKUA9zLk5i-Lh6XV_eeg/edit#gid=309179577"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Topics": "={{ $('GetTheNextTopicForscriptCreation').item.json.Topics }}",
+            "Status": "Done"
+          },
+          "matchingColumns": [
+            "Topics"
+          ],
+          "schema": [
+            {
+              "id": "Topics",
+              "displayName": "Topics",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Theme",
+              "displayName": "Theme",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Month",
+              "displayName": "Month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "7a7b3503-7afc-4b6a-9bea-4bcfa41ace1a",
+      "name": "MarkTopicAsDone",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "14hfKh_A2jk-DOobWCWrrEcJSKUA9zLk5i-Lh6XV_eeg",
+          "mode": "list",
+          "cachedResultName": "CreatedContent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14hfKh_A2jk-DOobWCWrrEcJSKUA9zLk5i-Lh6XV_eeg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 309179577,
+          "mode": "list",
+          "cachedResultName": "2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14hfKh_A2jk-DOobWCWrrEcJSKUA9zLk5i-Lh6XV_eeg/edit#gid=309179577"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Not Done"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "90e6a6b1-8ed4-4931-b372-9223e3529c40",
+      "name": "GetTheNextTopicForscriptCreation",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "GetTheNextTopicForscriptCreation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetInstascriptForTopic": {
+      "main": [
+        [
+          {
+            "node": "ChangeTTextoHTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChangeTTextoHTML": {
+      "main": [
+        [
+          {
+            "node": "SendScriptToCreator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendScriptToCreator": {
+      "main": [
+        [
+          {
+            "node": "MarkTopicAsDone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MarkTopicAsDone": {
+      "main": [
+        []
+      ]
+    },
+    "GetTheNextTopicForscriptCreation": {
+      "main": [
+        [
+          {
+            "node": "GetInstascriptForTopic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "f0beb418-3062-416d-b7e6-3372b249f155",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5b089d7c290c9ddbec1edd25018e08928bb24db9c3002d35fba160cae421a38c"
+  },
+  "id": "TQWtfup7Jv5tp8ty4p1HU",
+  "tags": []
+}

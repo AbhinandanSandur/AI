@@ -1,0 +1,1620 @@
+{
+  "name": "InvoiceEntry",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        160,
+        0
+      ],
+      "id": "a1d58f8c-86a8-4be2-a5c0-56c81d743ed9",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3wMKGqsl7OANBPIn",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list"
+        },
+        "text": "You read an invoice or cash receipt that is an image or a pdf and generate THE json WITH VALUES Invoicedate, VendorName, InvoiceNo,  TaxableValue (number), total gst as GST if  cgst and sgst are there , and total which includes gst and taxable amount (in number) in the field InvoiceAmount  with output format in json only and nothing else.  Always return strictly formatted JSON with no conversational filler with values in uppercase only. The other fields of json can be left blank Follow the json format : \n{\n  \"ForTDS\": [\n    {\n       \"Invoicedate\" : dd/mm/yyyy format . Map it from the image,\n          \"ForMonth”:monYYYY format. Let this be empty,\n          \"Type”: Keep it empty,\n          \"VendorName”:Map it from the image,\n          \"PAN”: Map it from image if available, else keep it empty,\n          \"GSTNo”:Map it from image if available, else keep it empty,\n          \"InvoiceNo”: Map it from image if available, else keep it empty,\n          \"TaxableValue”: Map it from image. This should be the amount exclusive of taxes and Gst. It will be a number,\n          \"GST”: Map it from image. This should be the the sum of cost and sgst if that split is there. It will be a number,\n          \"InvoiceAmount”: Map it from image. This should be sum of taxablevalue and GST,\n          \"TDSRate”: Keep it empty,\n          \"TDS”:Keep it empty,\n          \"Payable”:Keep it empty\n    }\n  ]\n}",
+        "inputType": "base64",
+        "simplify": "=",
+        "options": {
+          "detail": "auto"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        560,
+        0
+      ],
+      "id": "6d50ad2c-e1fe-490d-8f8e-e09c09130da1",
+      "name": "Analyze image",
+      "credentials": {
+        "openAiApi": {
+          "id": "Pem2T67DGPJchypL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e5408ad8-9c32-4604-b6ab-6c2951825bcc",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "image",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        0
+      ],
+      "id": "3d11369c-8930-4c54-aa5c-f369603fc3fa",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "=data",
+        "options": {
+          "maxPages": 1
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        272
+      ],
+      "id": "9e600e30-2336-4bd7-9253-64d98599a95d",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "You read the text that is passed to you and generate teh json with values Invoicedate, VendorName, InvoiceNo,  TaxableValue (number), total gst as GST if  cgst and sgst are there , and total which includes gst and taxable amount (in number) in the field InvoiceAmount  with output format in json only and nothing else. The other fields of json can be left blank Follow the json format : {\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"title\": \"ForTDS Schema\",\n  \"type\": \"object\",\n  \"required\": [\"ForTDS\"],\n  \"properties\": {\n    \"ForTDS\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"required\": [\n          \"Invoicedate\",\n          \"ForMonth\",\n          \"Type\",\n          \"VendorName\",\n          \"PAN\",\n          \"GSTNo\",\n          \"InvoiceNo\",\n          \"TaxableValue\",\n          \"GST\",\n          \"InvoiceAmount\",\n          \"TDSRate\",\n          \"TDS\",\n          \"Payable\"\n        ],\n        \"properties\": {\n          \"Invoicedate\": {\n            \"type\": \"string\",\n            \"description\": \"Invoice date in dd-mm-yyyy format\",\n            \"pattern\": \"^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-[0-9]{4}$\"\n          },\n          \"ForMonth\": {\n            \"type\": \"string\",\n            \"description\": \"Month in monYYYY format (e.g., Jan2026)\",\n            \"pattern\": \"^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[0-9]{4}$\"\n          },\n          \"Type\": {\n            \"type\": \"string\"\n          },\n          \"VendorName\": {\n            \"type\": \"string\"\n          },\n          \"PAN\": {\n            \"type\": \"string\"\n          },\n          \"GSTNo\": {\n            \"type\": \"string\"\n          },\n          \"InvoiceNo\": {\n            \"type\": \"string\"\n          },\n          \"Comment\": {\n            \"type\": \"string\"\n          },\n          \"TaxableValue\": {\n            \"type\": \"number\",\n            \"minimum\": 0\n          },\n          \"GST\": {\n            \"type\": \"number\",\n            \"minimum\": 0\n          },\n          \"InvoiceAmount\": {\n            \"type\": \"number\",\n            \"minimum\": 0\n          },\n          \"TDSRate\": {\n            \"type\": \"number\",\n            \"minimum\": 0\n          },\n          \"TDS\": {\n            \"type\": \"number\",\n            \"minimum\": 0\n          },\n          \"Payable\": {\n            \"type\": \"number\",\n            \"minimum\": 0\n          }\n        },\n        \"additionalProperties\": false\n      }\n    }\n  },\n  \"additionalProperties\": false\n}"
+            },
+            {
+              "content": "={{ $json.text }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        544,
+        272
+      ],
+      "id": "417e38a5-091a-4815-83f5-045dd61dd55e",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Pem2T67DGPJchypL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output[0].content[0].text;\n\nconst start = raw.indexOf('{');\nconst end = raw.lastIndexOf('}');\n\nlet jsonString = raw.slice(start, end + 1);\n\n// Normalize smart quotes\njsonString = jsonString\n  .replace(/[“”]/g, '\"')\n  .replace(/[‘’]/g, \"'\");\n\n// Remove trailing commas\njsonString = jsonString.replace(/,\\s*([}\\]])/g, '$1');\n\n// Remove non-printable characters\njsonString = jsonString.replace(/[^\\x20-\\x7E\\r\\n\\t]/g, \"\");\n\nconsole.log(\"Sanitized JSON:\", jsonString);\n\nconst parsed = JSON.parse(jsonString);\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        224
+      ],
+      "id": "8391d81d-a682-46d6-9b54-94837d5815d3",
+      "name": "ChangeToJson"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all incoming items\nconst items = $input.all();\n\n// First item contains the schema + ForTDS structure\nconst schemaItem = items[0].json;\n\n// Second item contains PAN, GST, etc.\nconst lookupItem = items[1].json;\n\n// Safely get the ForTDS record\nconst forTDS = schemaItem.properties.ForTDS[0];\n\nvar taxablevalue=0\n\nvar payable=0\nvar tdsAmount=0\nvar invoiceamount=$input.first().json.properties.ForTDS[0].InvoiceAmount\n\n\n// Get today's date\nconst today = new Date();\n\n// Move to previous month\ntoday.setMonth(today.getMonth() - 1);\n\n// Month names\nconst months = [\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\", \n                \"Jul\", \"Aug\", \"Sep\", \"Oct\", \"Nov\", \"Dec\"];\n\n// Build MonYYYY\nconst forMonth = `${months[today.getMonth()]}${today.getFullYear()}`;\n\n\n// Inject PAN and GST (or anything else you want to map)\nforTDS.PAN = lookupItem.PAN || \"\";\nforTDS.GSTNo = lookupItem.GSTNo || forTDS.GSTNo;\nforTDS.ForMonth=forMonth\nforTDS.TDSRate=lookupItem[\"TDS Rate\"]\nvar tdsamount = lookupItem[\"TDS Rate\"]*forTDS.TaxableValue\nvar payable=forTDS.InvoiceAmount-tdsamount\nforTDS.Payable=payable\nforTDS.TDS=tdsamount\n\n// Build final output\nconst output = [\n  {\n    invoiceData: {\n      ForTDS: [forTDS]\n    }\n  }\n];\n\n// Return as n8n output\nreturn output.map(o => ({ json: o }));\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        208
+      ],
+      "id": "89f97a31-b871-453e-8115-191d93f60b24",
+      "name": "AddAdditionalParamsIntoJson"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY",
+          "mode": "list",
+          "cachedResultName": "CashFlow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 56539335,
+          "mode": "list",
+          "cachedResultName": "TDS-Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY/edit#gid=56539335"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "VendorName",
+              "lookupValue": "={{ $json.properties.ForTDS[0].VendorName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1264,
+        336
+      ],
+      "id": "7ecd35c6-d966-46b9-b8cf-ee93bb6a6618",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1472,
+        208
+      ],
+      "id": "189b50f4-b539-4430-8339-f66d69c84ef5",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0",
+          "mode": "list",
+          "cachedResultName": "InvoiceEntry",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 5791985,
+          "mode": "list",
+          "cachedResultName": "ForTDS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit#gid=5791985"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Invoicedate": "={{ $json.invoiceData.ForTDS[0].Invoicedate }}",
+            "ForMonth": "={{ $json.invoiceData.ForTDS[0].ForMonth }}",
+            "Type": "={{ $json.invoiceData.ForTDS[0].Type }}",
+            "VendorName": "={{ $json.invoiceData.ForTDS[0].VendorName }}",
+            "PAN": "={{ $json.invoiceData.ForTDS[0].PAN }}",
+            "GSTNo": "={{ $json.invoiceData.ForTDS[0].GSTNo }}",
+            "InvoiceNo": "={{ $json.invoiceData.ForTDS[0].InvoiceNo }}",
+            "TaxableValue": "={{ $json.invoiceData.ForTDS[0].TaxableValue }}",
+            "GST": "={{ $json.invoiceData.ForTDS[0].GST }}",
+            "InvoiceAmount": "={{ $json.invoiceData.ForTDS[0].InvoiceAmount }}",
+            "TDSRate": "={{ $json.invoiceData.ForTDS[0].TDSRate }}",
+            "TDS": "={{ $json.invoiceData.ForTDS[0].TDS }}",
+            "Payable": "={{ $json.invoiceData.ForTDS[0].Payable }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Invoicedate",
+              "displayName": "Invoicedate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ForMonth",
+              "displayName": "ForMonth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "VendorName",
+              "displayName": "VendorName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PAN",
+              "displayName": "PAN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GSTNo",
+              "displayName": "GSTNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceNo",
+              "displayName": "InvoiceNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TaxableValue",
+              "displayName": "TaxableValue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GST",
+              "displayName": "GST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceAmount",
+              "displayName": "InvoiceAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDSRate",
+              "displayName": "TDSRate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDS",
+              "displayName": "TDS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payable",
+              "displayName": "Payable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1888,
+        208
+      ],
+      "id": "e5bd1e68-8d3a-4993-a886-f0fb02cccccb",
+      "name": "NEWSHEETENTRY",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY",
+          "mode": "list",
+          "cachedResultName": "CashFlow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1977885055,
+          "mode": "list",
+          "cachedResultName": "ForTDS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY/edit#gid=1977885055"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Invoicedate": "={{ $json.invoiceData.ForTDS[0].Invoicedate }}",
+            "ForMonth": "={{ $json.invoiceData.ForTDS[0].ForMonth }}",
+            "Type": "={{ $json.invoiceData.ForTDS[0].Type }}",
+            "VendorName": "={{ $json.invoiceData.ForTDS[0].VendorName }}",
+            "PAN": "={{ $json.invoiceData.ForTDS[0].PAN }}",
+            "GSTNo": "={{ $json.invoiceData.ForTDS[0].GSTNo }}",
+            "InvoiceNo": "={{ $json.invoiceData.ForTDS[0].InvoiceNo }}",
+            "TaxableValue": "={{ $json.invoiceData.ForTDS[0].TaxableValue }}",
+            "GST": "={{ $json.invoiceData.ForTDS[0].GST }}",
+            "InvoiceAmount": "={{ $json.invoiceData.ForTDS[0].InvoiceAmount }}",
+            "TDSRate": "={{ $json.invoiceData.ForTDS[0].TDSRate }}",
+            "TDS": "={{ $json.invoiceData.ForTDS[0].TDS }}",
+            "Payable": "={{ $json.invoiceData.ForTDS[0].Payable }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Invoicedate",
+              "displayName": "Invoicedate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ForMonth",
+              "displayName": "ForMonth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "VendorName",
+              "displayName": "VendorName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PAN",
+              "displayName": "PAN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GSTNo",
+              "displayName": "GSTNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceNo",
+              "displayName": "InvoiceNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TaxableValue",
+              "displayName": "TaxableValue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GST",
+              "displayName": "GST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceAmount",
+              "displayName": "InvoiceAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDSRate",
+              "displayName": "TDSRate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDS",
+              "displayName": "TDS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payable",
+              "displayName": "Payable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDS CHallan No",
+              "displayName": "TDS CHallan No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1888,
+        432
+      ],
+      "id": "6d60e632-1b75-4693-961d-5d27cf8e9a8a",
+      "name": "EXISTINGSHEETENTRY",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output[0].content[0].text\n\nconst start = raw.indexOf('{');\nconst end = raw.lastIndexOf('}');\n\nlet jsonString = raw.slice(start, end + 1);\n\n// Normalize smart quotes\njsonString = jsonString\n  .replace(/[“”]/g, '\"')\n  .replace(/[‘’]/g, \"'\");\n\n// Remove trailing commas\njsonString = jsonString.replace(/,\\s*([}\\]])/g, '$1');\n\n// Remove non-printable characters\njsonString = jsonString.replace(/[^\\x20-\\x7E\\r\\n\\t]/g, \"\");\n\nconsole.log(\"Sanitized JSON:\", jsonString);\n\nconst parsed = JSON.parse(jsonString);\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -48
+      ],
+      "id": "bfcb9f7a-321c-4c15-bd45-ac92012b5aee",
+      "name": "ChangeToJson2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY",
+          "mode": "list",
+          "cachedResultName": "CashFlow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 56539335,
+          "mode": "list",
+          "cachedResultName": "TDS-Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY/edit#gid=56539335"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "VendorName",
+              "lookupValue": "={{ $json.ForTDS[0].VendorName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        -192
+      ],
+      "id": "c698af67-0de9-4558-99fe-57d62152a298",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1472,
+        -112
+      ],
+      "id": "f469ede9-0292-41c2-ac99-a30d6709ba98",
+      "name": "Merge1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input array from previous node\nconst input = $input.all().map(i => i.json);\n\n// First object contains ForTDS array\nconst forTdsObj = input.find(obj => obj.ForTDS);\nconst tdsData = input.find(obj => obj[\"TDS Rate\"] !== undefined);\n\n// Get today's date\nconst today = new Date();\n\n// Move to previous month\ntoday.setMonth(today.getMonth() - 1);\n\n// Month names\nconst months = [\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\", \n                \"Jul\", \"Aug\", \"Sep\", \"Oct\", \"Nov\", \"Dec\"];\n\n// Build MonYYYY\nconst forMonth = `${months[today.getMonth()]}${today.getFullYear()}`;\n\n\nif (!forTdsObj || !tdsData) {\n  throw new Error(\"Required input objects not found\");\n}\n\n// Take first ForTDS record\nconst record = forTdsObj.ForTDS[0];\n\n// Merge fields\nrecord.TDSRate = tdsData[\"TDS Rate\"] ?? record.TDSRate;\nrecord.PAN = tdsData.PAN ?? record.PAN;\nrecord.GSTNo = tdsData.GSTNo ?? record.GSTNo;\nrecord.ForMonth=forMonth\nrecord.TDS=record.TaxableValue*record.TDSRate\nrecord.Payable=record.InvoiceAmount-record.TDS\nrecord.Type=tdsData.Type1\nrecord.Category=tdsData.Category\n\n\n\n// Return only ForTDS as output\nreturn [\n  {\n    json: {\n      ForTDS: forTdsObj.ForTDS\n    }\n  }\n];\n\n\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        -112
+      ],
+      "id": "ecebe8e3-e9d6-4dc0-a40c-6d6ea7fdcdd0",
+      "name": "AddAdditionalParamsIntoJson1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0",
+          "mode": "list",
+          "cachedResultName": "InvoiceEntry",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 5791985,
+          "mode": "list",
+          "cachedResultName": "ForTDS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit#gid=5791985"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Invoicedate": "={{ $json.ForTDS[0].Invoicedate }}",
+            "ForMonth": "={{ $json.ForTDS[0].ForMonth }}",
+            "VendorName": "={{ $json.ForTDS[0].VendorName }}",
+            "PAN": "={{ $json.ForTDS[0].PAN }}",
+            "GSTNo": "={{ $json.ForTDS[0].GSTNo }}",
+            "InvoiceNo": "={{ $json.ForTDS[0].InvoiceNo }}",
+            "TaxableValue": "={{ $json.ForTDS[0].TaxableValue }}",
+            "GST": "={{ $json.ForTDS[0].GST }}",
+            "InvoiceAmount": "={{ $json.ForTDS[0].InvoiceAmount }}",
+            "TDSRate": "={{ $json.ForTDS[0].TDSRate }}",
+            "TDS": "={{ $json.ForTDS[0].TDS }}",
+            "Payable": "={{ $json.ForTDS[0].Payable }}",
+            "Type": "={{ $json.ForTDS[0].Category }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Invoicedate",
+              "displayName": "Invoicedate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ForMonth",
+              "displayName": "ForMonth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "VendorName",
+              "displayName": "VendorName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PAN",
+              "displayName": "PAN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GSTNo",
+              "displayName": "GSTNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceNo",
+              "displayName": "InvoiceNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TaxableValue",
+              "displayName": "TaxableValue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GST",
+              "displayName": "GST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceAmount",
+              "displayName": "InvoiceAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDSRate",
+              "displayName": "TDSRate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDS",
+              "displayName": "TDS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payable",
+              "displayName": "Payable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2288,
+        -240
+      ],
+      "id": "a775984c-918e-400b-a63b-2a5a3df5f6b3",
+      "name": "AddRowinNewSheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY",
+          "mode": "list",
+          "cachedResultName": "CashFlow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1977885055,
+          "mode": "list",
+          "cachedResultName": "ForTDS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/182V7NB3PhOV_S0n9RxmPy47YlRhcQsUp47KtNTnHVVY/edit#gid=1977885055"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Invoicedate": "={{ $json.ForTDS[0].Invoicedate }}",
+            "ForMonth": "={{ $json.ForTDS[0].ForMonth }}",
+            "Type": "={{ $json.ForTDS[0].Type }}",
+            "VendorName": "={{ $json.ForTDS[0].VendorName }}",
+            "PAN": "={{ $json.ForTDS[0].PAN }}",
+            "GSTNo": "={{ $json.ForTDS[0].GSTNo }}",
+            "InvoiceNo": "={{ $json.ForTDS[0].InvoiceNo }}",
+            "TaxableValue": "={{ $json.ForTDS[0].TaxableValue }}",
+            "GST": "={{ $json.ForTDS[0].GST }}",
+            "InvoiceAmount": "={{ $json.ForTDS[0].InvoiceAmount }}",
+            "TDSRate": "={{ $json.ForTDS[0].TDSRate }}",
+            "TDS": "={{ $json.ForTDS[0].TDS }}",
+            "Payable": "={{ $json.ForTDS[0].Payable }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Invoicedate",
+              "displayName": "Invoicedate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ForMonth",
+              "displayName": "ForMonth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "VendorName",
+              "displayName": "VendorName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PAN",
+              "displayName": "PAN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GSTNo",
+              "displayName": "GSTNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceNo",
+              "displayName": "InvoiceNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TaxableValue",
+              "displayName": "TaxableValue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GST",
+              "displayName": "GST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceAmount",
+              "displayName": "InvoiceAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDSRate",
+              "displayName": "TDSRate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDS",
+              "displayName": "TDS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payable",
+              "displayName": "Payable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDS CHallan No",
+              "displayName": "TDS CHallan No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2272,
+        -48
+      ],
+      "id": "d5c0593c-e1c8-456b-b0ea-dcff37280c7a",
+      "name": "EXISTINGSHEETENTRY1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/u/0/folders/1HT1woNVbNcN6NzRCkc9YAS0P1W1v0GBm",
+          "mode": "url"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "862956af-24e5-4ce8-b6ca-184cf05ccdb1",
+      "name": "LookupMasterData",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3wMKGqsl7OANBPIn",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0",
+          "mode": "list",
+          "cachedResultName": "InvoiceEntry",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "InvoiceDate": "={{ $json.ForTDS[0].Invoicedate }}",
+            "ForMonth": "={{ $json.ForTDS[0].ForMonth }}",
+            "To": "={{ $json.ForTDS[0].VendorName }}",
+            "Detail": "={{ $json.ForTDS[0].Category }}",
+            "Category": "={{ $json.ForTDS[0].Category }}",
+            "TaxableAmount": "={{ $json.ForTDS[0].TaxableValue }}",
+            "GST": "={{ $json.ForTDS[0].GST }}",
+            "TDS": "={{ $json.ForTDS[0].TDS }}",
+            "InvoiceAmount": "={{ $json.ForTDS[0].InvoiceAmount }}",
+            "Payable": "={{ $json.ForTDS[0].Payable }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "InvoiceDate",
+              "displayName": "InvoiceDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ForMonth",
+              "displayName": "ForMonth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "To",
+              "displayName": "To",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Detail",
+              "displayName": "Detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TaxableAmount",
+              "displayName": "TaxableAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GST",
+              "displayName": "GST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDS",
+              "displayName": "TDS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ProfessionalTax",
+              "displayName": "ProfessionalTax",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceAmount",
+              "displayName": "InvoiceAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payable",
+              "displayName": "Payable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2272,
+        144
+      ],
+      "id": "3688dd06-1181-4d77-92d1-0198959744ee",
+      "name": "NewInvoiceSheetEntry",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0",
+          "mode": "list",
+          "cachedResultName": "InvoiceEntry",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "InvoiceDate": "={{ $json.invoiceData.ForTDS[0].Invoicedate }}",
+            "ForMonth": "={{ $json.invoiceData.ForTDS[0].ForMonth }}",
+            "To": "={{ $json.invoiceData.ForTDS[0].VendorName }}",
+            "Detail": "={{ $json.invoiceData.ForTDS[0].Category }}",
+            "Category": "={{ $json.invoiceData.ForTDS[0].Category }}",
+            "TaxableAmount": "={{ $json.invoiceData.ForTDS[0].TaxableValue }}",
+            "GST": "={{ $json.invoiceData.ForTDS[0].GST }}",
+            "TDS": "={{ $json.ForTDS[0].TDS }}",
+            "InvoiceAmount": "={{ $json.ForTDS[0].InvoiceAmount }}",
+            "Payable": "={{ $json.ForTDS[0].Payable }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "InvoiceDate",
+              "displayName": "InvoiceDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ForMonth",
+              "displayName": "ForMonth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "To",
+              "displayName": "To",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Detail",
+              "displayName": "Detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TaxableAmount",
+              "displayName": "TaxableAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GST",
+              "displayName": "GST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TDS",
+              "displayName": "TDS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ProfessionalTax",
+              "displayName": "ProfessionalTax",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InvoiceAmount",
+              "displayName": "InvoiceAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payable",
+              "displayName": "Payable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1872,
+        640
+      ],
+      "id": "90e17350-0942-4029-b1c3-9edd2c903298",
+      "name": "NewInvoiceSheetEntry1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "ChangeToJson2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "ChangeToJson",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChangeToJson": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddAdditionalParamsIntoJson": {
+      "main": [
+        [
+          {
+            "node": "NEWSHEETENTRY",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "EXISTINGSHEETENTRY",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "NewInvoiceSheetEntry1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AddAdditionalParamsIntoJson",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChangeToJson2": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "AddAdditionalParamsIntoJson1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddAdditionalParamsIntoJson1": {
+      "main": [
+        [
+          {
+            "node": "EXISTINGSHEETENTRY1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AddRowinNewSheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "NewInvoiceSheetEntry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LookupMasterData": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "9862e0d8-814e-4eae-a0fd-e82a4a1fa1a0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5b089d7c290c9ddbec1edd25018e08928bb24db9c3002d35fba160cae421a38c"
+  },
+  "id": "PLA1XfVrvmOccmTaZD7LJ",
+  "tags": []
+}
