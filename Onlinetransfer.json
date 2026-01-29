@@ -1,0 +1,475 @@
+{
+  "name": "Onlinetransfer",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1bmoIiZhxmvDLyYODJsitPJ1g4zm86kHe",
+          "mode": "list",
+          "cachedResultName": "Onlinetransfers",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1bmoIiZhxmvDLyYODJsitPJ1g4zm86kHe"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "02f45e7b-0f51-470f-aac5-9dd4e32252d2",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3wMKGqsl7OANBPIn",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "d72ebd12-e674-481f-98ef-2f8c7f4d28a9",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3wMKGqsl7OANBPIn",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "The image has a online transfer transaciton detail. Analyse the image and give the json structure only as response which follows the format\n\n{\n  \"onlinetranfer\": [\n    {\n      \"Date\": in dd/mm/yyyy referred from transaction date,\n      \"ForMonth\": leave blank ,\n      \"To\": refer To in the image ,\n      \"Detail\": Refer Note in the image,\n      \"ReferenceID\": Refer Reference ID in the image,\n      \"Amount\": From Amount and should be number,\n      \"Type\": Leave it blank,\n      \"Category\": Leave it blank\n    }\n  ]\n}",
+        "inputType": "base64",
+        "binaryPropertyName": "=  data",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        368,
+        0
+      ],
+      "id": "4ee5d5a4-cb96-4fde-996b-80f97d5c2409",
+      "name": "Analyze image",
+      "credentials": {
+        "openAiApi": {
+          "id": "Pem2T67DGPJchypL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst raw = $input.first().json['0'].content[0].text\n\nconst start = raw.indexOf('{');\nconst end = raw.lastIndexOf('}');\n\nlet jsonString = raw.slice(start, end + 1);\n\n// Normalize smart quotes\njsonString = jsonString\n  .replace(/[“”]/g, '\"')\n  .replace(/[‘’]/g, \"'\");\n\n// Remove trailing commas\njsonString = jsonString.replace(/,\\s*([}\\]])/g, '$1');\n\n// Remove non-printable characters\njsonString = jsonString.replace(/[^\\x20-\\x7E\\r\\n\\t]/g, \"\");\n\nconsole.log(\"Sanitized JSON:\", jsonString);\n\nconst parsed = JSON.parse(jsonString);\nreturn parsed;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        0
+      ],
+      "id": "2c425402-dec1-4419-b10b-d17cdb3cba4d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0",
+          "mode": "list",
+          "cachedResultName": "InvoiceEntry",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 288740694,
+          "mode": "list",
+          "cachedResultName": "OnlineTransfer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit#gid=288740694"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.onlinetranfer[0].Date }}",
+            "To": "={{ $json.onlinetranfer[0].To }}",
+            "Detail": "={{ $json.onlinetranfer[0].Detail }}",
+            "Amount": "={{ $json.onlinetranfer[0].Amount }}",
+            "ReferenceID": "={{ $json.onlinetranfer[0].ReferenceID }}",
+            "Type": "={{ $json.onlinetranfer[0].Type }}",
+            "Category": "={{ $json.onlinetranfer[0].Category }}",
+            "ForMonth": "={{ $json.onlinetranfer[0].ForMonth }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ForMonth",
+              "displayName": "ForMonth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "To",
+              "displayName": "To",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Detail",
+              "displayName": "Detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bank",
+              "displayName": "Bank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ReferenceID",
+              "displayName": "ReferenceID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        -128
+      ],
+      "id": "a16adb0c-14b7-4a01-b77c-0b2d799974c5",
+      "name": "AddRowINtoOnlineTransferSheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0",
+          "mode": "list",
+          "cachedResultName": "InvoiceEntry",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1749836951,
+          "mode": "list",
+          "cachedResultName": "Cashflow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dGfSrm3hUfEckIIPh-7IfMszw1GKw9b_4CYZEwTB0j0/edit#gid=1749836951"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ForMonth": "={{ $json.onlinetranfer[0].ForMonth }}",
+            "Detail": "={{ $json.onlinetranfer[0].Detail }}",
+            "TransactionID": "={{ $json.onlinetranfer[0].ReferenceID }}",
+            "Amount": "={{ $json.onlinetranfer[0].Amount }}",
+            "Credit/Debit": "CR",
+            "Type": "={{ $json.onlinetranfer[0].Type }}",
+            "PaymentDate": "={{ $json.onlinetranfer[0].Date }}",
+            "Category": "={{ $json.onlinetranfer[0].Category }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "PaymentDate",
+              "displayName": "PaymentDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ForMonth",
+              "displayName": "ForMonth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Detail",
+              "displayName": "Detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor",
+              "displayName": "Vendor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "TransactionID",
+              "displayName": "TransactionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Credit/Debit",
+              "displayName": "Credit/Debit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Balance",
+              "displayName": "Balance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        64
+      ],
+      "id": "f9e1c141-3457-4d50-bb00-83b06807d93c",
+      "name": "AddRowINtoCashFlow",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ongPL1KhsTHawv54",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const filename=$('Google Drive Trigger').first().json.name\n// Get today's date\nconst today = new Date();\n\n// Move to previous month\n\n\n// Get input item\nconst data = $input.first().json;\n\n\n\n// Safety checks\nif (!data.onlinetranfer || !data.onlinetranfer.length) {\n  throw new Error(\"onlinetranfer array not found\");\n}\n\n// Update field\n\ndetail = data.onlinetranfer[0].Detail\ntype=\"\"\nif(detail.toUpperCase().includes(\"EXP\")){\n  type=\"Expense\"\n}else if (detail.toUpperCase().includes(\"INV\")){\n  type=\"Invoice\"\n}\nelse if (detail.toUpperCase().includes(\"TRNSF\")){\n  type=\"Transfer\"\n}\ndata.onlinetranfer[0].Type = type\ncategory=\"\"\nif(detail.toUpperCase().includes(\"RPR\")){\n  category=\"Repair\"\n}else if (detail.toUpperCase().includes(\"SLR\")){\n  category=\"Salary\"\n}\nelse if (detail.toUpperCase().includes(\"ADMIN\")){\n  category=\"Administration\"\n}\nelse if (detail.toUpperCase().includes(\"BSCM\")){\n  category=\"BESCOM\"\n}\nelse if (detail.toUpperCase().includes(\"MNT\")){\n  category=\"Maintenance\"\n}\nelse if (detail.toUpperCase().includes(\"PTY\")){\n  category=\"Petty Cash\"\n}\nelse if (detail.toUpperCase().includes(\"PRPT\")){\n  category=\"Property Tax\"\n}\nelse if (detail.toUpperCase().includes(\"AMC\")){\n  category=\"AMC\"\n}\nelse if (detail.toUpperCase().includes(\"CMP\")){\n  category=\"Compliance\"\n}\ndata.onlinetranfer[0].Category = category\n\nif(type == \"Invoice\"){\n  today.setMonth(today.getMonth()-1);\n}else{\n  today.setMonth(today.getMonth());\n}\n\n\n\n// Month names\nconst months = [\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\", \n                \"Jul\", \"Aug\", \"Sep\", \"Oct\", \"Nov\", \"Dec\"];\n\n// Build MonYYYY\nconst forMonth = `${months[today.getMonth()]}${today.getFullYear()}`;\ndata.onlinetranfer[0].ForMonth = forMonth;\n\n\n\n// You can update more fields if needed\n// data.onlinetranfer[0].Category = \"Fuel\";\n// data.onlinetranfer[0].Type = \"Expense\";\n\n// Return updated object\nreturn [\n  {\n    json: data\n  }\n];\n\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        16
+      ],
+      "id": "cb542c5e-6862-4e6c-ba41-73e7851b3baa",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AddRowINtoOnlineTransferSheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AddRowINtoCashFlow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "eacb681d-0b6f-42dd-a32e-d4ea7bd9068c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5b089d7c290c9ddbec1edd25018e08928bb24db9c3002d35fba160cae421a38c"
+  },
+  "id": "nxDIdT_D6R_DK2Knz0CJX",
+  "tags": []
+}
