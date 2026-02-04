@@ -18,7 +18,7 @@
         0,
         0
       ],
-      "id": "c1e563e9-1745-4c04-b287-f7a8219e2102",
+      "id": "f72d6f07-bb3e-4a29-a798-ad1f4e302b6a",
       "name": "Schedule Trigger"
     },
     {
@@ -49,11 +49,11 @@
         416,
         0
       ],
-      "id": "69dde050-b349-42b8-b4ba-7a18d769c0a2",
+      "id": "d43b8ea1-44d2-4d2b-9d21-07c91c6d6ad6",
       "name": "GetInstascriptForTopic",
       "credentials": {
         "openAiApi": {
-          "id": "Pem2T67DGPJchypL",
+          "id": "DmMbVKq60UzKD2QI",
           "name": "OpenAi account"
         }
       }
@@ -68,13 +68,13 @@
         720,
         0
       ],
-      "id": "a570c55a-9fae-40d2-8d92-56f95263f533",
+      "id": "513cd452-b9af-42b7-9aa4-d045ec5a5c5d",
       "name": "ChangeTTextoHTML"
     },
     {
       "parameters": {
-        "sendTo": "abhi.san@gmail.com",
-        "subject": "Content for next topic",
+        "sendTo": "drsamskruthii@gmail.com",
+        "subject": "=Content for next topic -  {{ $('GetTheNextTopicForscriptCreation').item.json.Topics }} - under the theme - {{ $('GetTheNextTopicForscriptCreation').item.json.Theme }}",
         "message": "={{ $json.html }}",
         "options": {}
       },
@@ -84,12 +84,12 @@
         896,
         0
       ],
-      "id": "bb30efca-77ea-4076-a6e2-c4b1f13eaf3f",
+      "id": "7fb70f44-d560-4704-bf63-0836ed4c7977",
       "name": "SendScriptToCreator",
       "webhookId": "885dea69-6747-4183-8387-4ebbfdd689ef",
       "credentials": {
         "gmailOAuth2": {
-          "id": "OCOKCiI52i5236J4",
+          "id": "O6PaszZwOWkvt9KQ",
           "name": "Gmail account"
         }
       }
@@ -181,11 +181,11 @@
         1056,
         0
       ],
-      "id": "7a7b3503-7afc-4b6a-9bea-4bcfa41ace1a",
+      "id": "ffd34220-dba5-4bee-8cb8-7495f98fcb75",
       "name": "MarkTopicAsDone",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "ongPL1KhsTHawv54",
+          "id": "Vthn9EICaY1TODdi",
           "name": "Google Sheets account"
         }
       }
@@ -224,11 +224,11 @@
         208,
         0
       ],
-      "id": "90e6a6b1-8ed4-4931-b372-9223e3529c40",
+      "id": "1165b954-1622-45fc-9e0d-bdb32134f140",
       "name": "GetTheNextTopicForscriptCreation",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "ongPL1KhsTHawv54",
+          "id": "Vthn9EICaY1TODdi",
           "name": "Google Sheets account"
         }
       }
@@ -280,11 +280,6 @@
         ]
       ]
     },
-    "MarkTopicAsDone": {
-      "main": [
-        []
-      ]
-    },
     "GetTheNextTopicForscriptCreation": {
       "main": [
         [
@@ -302,11 +297,11 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "f0beb418-3062-416d-b7e6-3372b249f155",
+  "versionId": "c2ddc027-c09e-46bc-a0d8-83b7b233a7fe",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "5b089d7c290c9ddbec1edd25018e08928bb24db9c3002d35fba160cae421a38c"
+    "instanceId": "03f4800f9da5647440e2c6266049bb2eeab55414dc8a7263184e09febd956afb"
   },
-  "id": "TQWtfup7Jv5tp8ty4p1HU",
+  "id": "b828QnFiB-F7baWGf-zqj",
   "tags": []
 }
