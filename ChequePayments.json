@@ -247,6 +247,42 @@
       ],
       "id": "4092465a-1ac6-4f32-bb1f-75cfbdcb0e99",
       "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Google Drive Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/u/0/folders/1dmB7iZfnqOTAl0RiSWpsYT65ONvelT-1",
+          "mode": "url"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0a31dfc0-37f4-408d-aee3-ff6412c4d5e0",
+      "name": "Move file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "U7iQf5SgENYDEZn8",
+          "name": "Google Drive account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -305,6 +341,17 @@
           }
         ]
       ]
+    },
+    "AddRowINtoOnlineTransferSheet": {
+      "main": [
+        [
+          {
+            "node": "Move file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -312,7 +359,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "cef41201-9dcd-422a-8f59-cf7faf08370f",
+  "versionId": "8417676f-8256-47e0-82f4-6b9ae567d6fc",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "03f4800f9da5647440e2c6266049bb2eeab55414dc8a7263184e09febd956afb"
