@@ -24,14 +24,14 @@
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
       "position": [
-        0,
-        0
+        -912,
+        128
       ],
-      "id": "02f45e7b-0f51-470f-aac5-9dd4e32252d2",
+      "id": "2d2dc8fc-995b-4fa8-9122-71b7e430f8f5",
       "name": "Google Drive Trigger",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "3wMKGqsl7OANBPIn",
+          "id": "U7iQf5SgENYDEZn8",
           "name": "Google Drive account"
         }
       }
@@ -49,14 +49,14 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        208,
-        0
+        -704,
+        128
       ],
-      "id": "d72ebd12-e674-481f-98ef-2f8c7f4d28a9",
+      "id": "1e43bab7-5234-4eed-ab24-7824e6ec2782",
       "name": "Download file",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "3wMKGqsl7OANBPIn",
+          "id": "U7iQf5SgENYDEZn8",
           "name": "Google Drive account"
         }
       }
@@ -79,14 +79,14 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 2.1,
       "position": [
-        368,
-        0
+        -544,
+        128
       ],
-      "id": "4ee5d5a4-cb96-4fde-996b-80f97d5c2409",
+      "id": "e90edd12-abfc-4477-a69f-303493c6d164",
       "name": "Analyze image",
       "credentials": {
         "openAiApi": {
-          "id": "Pem2T67DGPJchypL",
+          "id": "DmMbVKq60UzKD2QI",
           "name": "OpenAi account"
         }
       }
@@ -98,10 +98,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        544,
-        0
+        -368,
+        128
       ],
-      "id": "2c425402-dec1-4419-b10b-d17cdb3cba4d",
+      "id": "ac9cfaf0-77e7-4b80-b6ec-eabbd596f3c0",
       "name": "Code in JavaScript"
     },
     {
@@ -225,14 +225,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        912,
-        -128
+        0,
+        0
       ],
-      "id": "a16adb0c-14b7-4a01-b77c-0b2d799974c5",
+      "id": "e9cf5134-122c-4cd2-9d4f-3542ef7098e9",
       "name": "AddRowINtoOnlineTransferSheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "ongPL1KhsTHawv54",
+          "id": "Vthn9EICaY1TODdi",
           "name": "Google Sheets account"
         }
       }
@@ -371,14 +371,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        992,
-        64
+        80,
+        192
       ],
-      "id": "f9e1c141-3457-4d50-bb00-83b06807d93c",
+      "id": "827ab260-91a5-4a01-b641-49a9de9fd54c",
       "name": "AddRowINtoCashFlow",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "ongPL1KhsTHawv54",
+          "id": "Vthn9EICaY1TODdi",
           "name": "Google Sheets account"
         }
       }
@@ -390,10 +390,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        752,
-        16
+        -160,
+        144
       ],
-      "id": "cb542c5e-6862-4e6c-ba41-73e7851b3baa",
+      "id": "db2077c1-0c13-4071-93a0-4c9a416ef9d1",
       "name": "Code in JavaScript1"
     }
   ],
@@ -465,11 +465,11 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "eacb681d-0b6f-42dd-a32e-d4ea7bd9068c",
+  "versionId": "",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "5b089d7c290c9ddbec1edd25018e08928bb24db9c3002d35fba160cae421a38c"
+    "instanceId": "03f4800f9da5647440e2c6266049bb2eeab55414dc8a7263184e09febd956afb"
   },
-  "id": "nxDIdT_D6R_DK2Knz0CJX",
+  "id": "K21Ao0s-_9pRrn-_1WDDT",
   "tags": []
 }
